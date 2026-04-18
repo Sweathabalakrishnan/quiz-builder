@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-box {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+        .pending {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Backend Deployment Test</h1>
+    <p>Click the button below to test if your backend is deployed and working:</p>
+
+    <button onclick="testBackend()">Test Backend Connection</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function testBackend() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-box pending"><h3>🔄 Testing...</h3></div>';
+
+            const projectId = 'ecihrubcueotcqmosqti';
+            const publicAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjaWhydWJjdWVvdGNxbW9zcXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTg4MTIsImV4cCI6MjA5MDQzNDgxMn0.wXa9C81ovnB-46rT60qv007Ww5B_VXPW2okeekMEmNk';
+            const apiBase = `https://${projectId}.supabase.co/functions/v1/make-server-994e9032`;
+
+            let html = '';
+
+            // Test 1: Health Check
+            try {
+                const healthResponse = await fetch(`${apiBase}/health`, {
+                    headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+                });
+
+                if (healthResponse.ok) {
+                    const data = await healthResponse.json();
+                    html += `
+                        <div class="test-box success">
+                            <h3>✅ Test 1: Health Check - PASSED</h3>
+                            <p>Backend server is online and responding!</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="test-box error">
+                            <h3>❌ Test 1: Health Check - FAILED</h3>
+                            <p>Backend responded with HTTP ${healthResponse.status}</p>
+                            <p><strong>Action needed:</strong> Deploy the edge function from Make settings</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                html += `
+                    <div class="test-box error">
+                        <h3>❌ Test 1: Health Check - FAILED</h3>
+                        <p>Cannot connect to backend server</p>
+                        <p>Error: ${error.message}</p>
+                        <p><strong>Action needed:</strong> Deploy the edge function from Make settings</p>
+                    </div>
+                `;
+                resultsDiv.innerHTML = html;
+                return;
+            }
+
+            // Test 2: Get Quizzes
+            try {
+                const quizzesResponse = await fetch(`${apiBase}/quizzes`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${publicAnonKey}`
+                    }
+                });
+
+                if (quizzesResponse.ok) {
+                    const quizzes = await quizzesResponse.json();
+                    html += `
+                        <div class="test-box success">
+                            <h3>✅ Test 2: Get Quizzes - PASSED</h3>
+                            <p>Found ${quizzes.length} quiz(es) in the database</p>
+                            <pre>${JSON.stringify(quizzes, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="test-box error">
+                            <h3>❌ Test 2: Get Quizzes - FAILED</h3>
+                            <p>HTTP ${quizzesResponse.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                html += `
+                    <div class="test-box error">
+                        <h3>❌ Test 2: Get Quizzes - FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+
+            // Test 3: Save Quiz
+            try {
+                const testQuiz = {
+                    id: `test-${Date.now()}`,
+                    title: 'Backend Test Quiz',
+                    description: 'This quiz was created by the backend test',
+                    questions: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                const saveResponse = await fetch(`${apiBase}/quizzes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${publicAnonKey}`
+                    },
+                    body: JSON.stringify(testQuiz)
+                });
+
+                if (saveResponse.ok) {
+                    html += `
+                        <div class="test-box success">
+                            <h3>✅ Test 3: Save Quiz - PASSED</h3>
+                            <p>Successfully saved a test quiz to the backend!</p>
+                            <p><strong>🎉 ALL TESTS PASSED! Your backend is fully operational!</strong></p>
+                            <p>You can now create quizzes and share links with students.</p>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await saveResponse.json().catch(() => ({}));
+                    html += `
+                        <div class="test-box error">
+                            <h3>❌ Test 3: Save Quiz - FAILED</h3>
+                            <p>HTTP ${saveResponse.status}</p>
+                            <p>Error: ${JSON.stringify(errorData)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                html += `
+                    <div class="test-box error">
+                        <h3>❌ Test 3: Save Quiz - FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
