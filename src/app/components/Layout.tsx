@@ -1,9 +1,15 @@
 import { Outlet, Link, useLocation } from 'react-router';
-import { FileText, Home } from 'lucide-react';
+import { FileText, Home, Lock } from 'lucide-react';
 import { Button } from './ui/button';
+import { clearDashboardAccess, isDashboardProtectionEnabled } from '../utils/dashboard-access';
 
 export function Layout() {
   const location = useLocation();
+
+  const handleLockDashboard = () => {
+    clearDashboardAccess();
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen text-slate-950">
@@ -31,6 +37,17 @@ export function Layout() {
                     Dashboard
                   </Button>
                 </Link>
+                {isDashboardProtectionEnabled() && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLockDashboard}
+                    className="text-slate-600 hover:bg-[#f4effd] hover:text-[#281C59]"
+                  >
+                    <Lock className="size-4 mr-2" />
+                    Lock
+                  </Button>
+                )}
               </nav>
             </div>
           </div>

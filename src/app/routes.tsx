@@ -7,17 +7,18 @@ import { QuizResults } from "./pages/QuizResults";
 import { StudentResults } from "./pages/StudentResults";
 import { BackendStatus } from "./pages/BackendStatus";
 import { TestQuizLink } from "./pages/TestQuizLink";
-import { Layout } from "./components/Layout";
+import { OwnerLayout } from "./components/OwnerLayout";
 
 export const router = createBrowserRouter([
+  { path: "quiz/:id", Component: TakeQuiz },
+  { path: "quiz/:quizId/results/:attemptId", Component: QuizResults },
   {
     path: "/",
-    Component: Layout,
+    Component: OwnerLayout,
     children: [
       { index: true, Component: Dashboard },
       { path: "create", Component: CreateQuiz },
       { path: "edit/:id", Component: EditQuiz },
-      { path: "quiz/:id", Component: TakeQuiz },
       { path: "results/:id", Component: QuizResults },
       { path: "student-results", Component: StudentResults },
       { path: "backend-status", Component: BackendStatus },

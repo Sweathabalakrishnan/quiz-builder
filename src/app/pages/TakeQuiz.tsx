@@ -93,6 +93,15 @@ export function TakeQuiz() {
     }
   };
 
+  const handleBackNavigation = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto mt-20">
@@ -152,10 +161,10 @@ export function TakeQuiz() {
 
             <div className="flex gap-3 pt-4">
               <Button
-                onClick={() => navigate('/')}
+                onClick={handleBackNavigation}
                 className="flex-1"
               >
-                Go to Dashboard
+                Go Back
               </Button>
               <Button
                 onClick={() => window.location.reload()}
@@ -180,7 +189,7 @@ export function TakeQuiz() {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => navigate('/')}
+              onClick={handleBackNavigation}
               className="mb-4 bg-white/80 text-slate-700 hover:bg-[#f4effd]"
             >
               <ArrowLeft className="size-4" />
@@ -396,7 +405,7 @@ export function TakeQuiz() {
 
     quizStorage.saveAttempt(attempt).then(() => {
       toast.success('Quiz submitted!');
-      navigate(`/results/${attempt.id}`);
+      navigate(`/quiz/${quiz.id}/results/${attempt.id}`);
     }).catch(() => {
       toast.error('Failed to submit quiz');
     }).finally(() => {
@@ -412,7 +421,7 @@ export function TakeQuiz() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+        <Button variant="ghost" size="icon" onClick={handleBackNavigation}>
           <ArrowLeft className="size-4" />
         </Button>
         <div className="flex-1">

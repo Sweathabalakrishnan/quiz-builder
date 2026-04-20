@@ -10,31 +10,33 @@ import { quizStorage } from '../utils/storage-supabase';
 import { toast } from 'sonner';
 
 export function QuizResults() {
-  const { id } = useParams<{ id: string }>();
+  const { id, quizId, attemptId } = useParams<{ id?: string; quizId?: string; attemptId?: string }>();
   const navigate = useNavigate();
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
+  const resultId = attemptId ?? id;
+  const isPublicView = Boolean(quizId && attemptId);
 
   useEffect(() => {
-    if (!id) {
+    if (!resultId) {
       navigate('/');
       return;
     }
 
     const loadData = async () => {
       try {
-        const loadedAttempt = await quizStorage.getAttempt(id);
+        const loadedAttempt = await quizStorage.getAttempt(resultId);
         if (!loadedAttempt) {
           toast.error('Results not found');
-          navigate('/');
+          navigate(isPublicView && quizId ? `/quiz/${quizId}` : '/');
           return;
         }
 
         const loadedQuiz = await quizStorage.getQuiz(loadedAttempt.quizId);
         if (!loadedQuiz) {
           toast.error('Quiz not found');
-          navigate('/');
+          navigate(isPublicView && quizId ? `/quiz/${quizId}` : '/');
           return;
         }
 
@@ -43,14 +45,14 @@ export function QuizResults() {
       } catch (error) {
         console.error('Error loading results:', error);
         toast.error('Failed to load results');
-        navigate('/');
+        navigate(isPublicView && quizId ? `/quiz/${quizId}` : '/');
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [id, navigate]);
+  }, [isPublicView, navigate, quizId, resultId]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -136,7 +138,7 @@ export function QuizResults() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(isPublicView ? `/quiz/${quiz?.id ?? quizId}` : '/')}
             className="bg-white/80 text-slate-700 hover:bg-white"
           >
             <ArrowLeft className="size-4" />
@@ -284,12 +286,14 @@ export function QuizResults() {
                 Retake Quiz
               </Button>
             </Link>
-            <Link to="/">
-              <Button variant="outline" className="app-outline-action shadow-lg">
-                <Home className="size-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
+            {!isPublicView && (
+              <Link to="/">
+                <Button variant="outline" className="app-outline-action shadow-lg">
+                  <Home className="size-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+            )}
             <Button
               className="shadow-lg shadow-[#281C59]/20"
               onClick={handleShareResults}
